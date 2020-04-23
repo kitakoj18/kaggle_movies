@@ -10,26 +10,6 @@ import numpy as np
 import pandas as pd
 
 from scipy.spatial.distance import cosine
-
-def join_ratings_movies():
-    '''
-    Function to join movie genres from movies dataset with ratings dataset
-    '''
-    
-    df_ratings = pd.read_csv('../data/movie_lens/ratings.csv')
-    df_movies = pd.read_csv('../data/movie_lens/movies.csv')
-    
-    genre_cols = ['movie_id', 'unknown', 'action', 'adventure', 'animation', 'childrens',
-                  'comedy', 'crime', 'documentary', 'drama', 'fantasy', 'film-noir', 
-                  'horror', 'musical', 'mystery', 'romance', 'sci-fi', 'thriller',
-                  'war', 'western']
-    df_genres = df_movies[genre_cols]
-    
-    # left join ratings with genres 
-    df_movies_watched = df_ratings.merge(df_genres, left_on='movie_id', right_on='movie_id', how='left')
-    # print(df_movies_rated.info())
-    
-    return df_movies_watched
     
 
 def get_user_genres(df_movies_watched):
@@ -61,6 +41,7 @@ def calc_genre_sim(genre_pref, movie_genre, movie_in_pref=True, normalize=True):
         genre_pref = genre_pref - movie_genre
         
     if normalize:
+        # try just using scikitlearn minmax scaler
         genre_pref = np.true_divide(genre_pref - genre_pref.min(), genre_pref.max() - genre_pref.min())
     
     return cosine(genre_pref, movie_genre)
@@ -75,6 +56,10 @@ def add_genre_sim(df_movies_watched, df_genre_pref, df_movies):
     '''
     data = df_movies_watched.copy()
     similarities = []
+    genres = ['unknown', 'action', 'adventure', 'animation', 'childrens',
+                  'comedy', 'crime', 'documentary', 'drama', 'fantasy', 'film-noir', 
+                  'horror', 'musical', 'mystery', 'romance', 'sci-fi', 'thriller',
+                  'war', 'western']
     
     for idx, row in df_movies_watched.iterrows():
         user_id = row['user_id']
@@ -84,18 +69,12 @@ def add_genre_sim(df_movies_watched, df_genre_pref, df_movies):
         # get user's genre preference from df_genre
         user_pref = df_genre_pref[df_genre_pref['user_id'] == user_id]
         # get genre vector
-        genre_pref = user_pref[['unknown', 'action', 'adventure', 'animation', 'childrens',
-                  'comedy', 'crime', 'documentary', 'drama', 'fantasy', 'film-noir', 
-                  'horror', 'musical', 'mystery', 'romance', 'sci-fi', 'thriller',
-                  'war', 'western']].to_numpy()
+        genre_pref = user_pref[genres].to_numpy()
         
         # get movie genre from df_movies
         movie_genre = df_movies[df_movies['movie_id'] == movie_id]
         # get genre vector
-        movie_genre_vec = movie_genre[['unknown', 'action', 'adventure', 'animation', 'childrens',
-                  'comedy', 'crime', 'documentary', 'drama', 'fantasy', 'film-noir', 
-                  'horror', 'musical', 'mystery', 'romance', 'sci-fi', 'thriller',
-                  'war', 'western']].to_numpy()
+        movie_genre_vec = movie_genre[genres].to_numpy()
         
         # here add condition: if watched_movie = 1 then movie_in_pref = True
         # else if watched_movie = 0 then movie_in_pref = False

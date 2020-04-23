@@ -69,4 +69,6 @@ def get_movie_creds():
     df_creds['cast_count'] = cast_counts
     df_creds['crew_count'] = crew_counts
     
+    df_creds = df_creds[['id', 'cast_count', 'crew_count']]
+    
     return df_creds
