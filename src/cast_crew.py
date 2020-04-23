@@ -18,6 +18,9 @@ df_creds = pd.read_csv('../data/subsets/credits.csv')
 df_movies = pd.read_csv('../data/subsets/movies_metadata.csv')
 
 def convert_to_list(str_list):
+    '''
+    Convert strings into array literals
+    '''
     
     converted_list = ast.literal_eval(str_list)
     return converted_list

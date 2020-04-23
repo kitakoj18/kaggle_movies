@@ -5,10 +5,6 @@ Created on Tue Apr 21 17:18:36 2020
 
 @author: kojikitagawa
 
-Join older movie_lens dataset with newer one by movie name -
-id in movie_lens is superceded and does not match with other ids
-
-Doing this join to be able to get cast information from newer dataset
 """
 
 import numpy as np
@@ -36,13 +32,13 @@ def clean_title(title):
 def join_movie_datasets():
     '''
     Join old MovieLens dataset with newer one on movie titles to match older dataset
-    with newer movie ids
+    with newer movie ids to later be able to join cast and crew data
     '''
     
-    df_movies_old = pd.read_csv('../data/movie_lens/movies.csv')
+    df_movies_old = pd.read_csv('../data/movie_lens/movies_subset.csv')
     df_movies_old['title'] = df_movies_old['movie_title'].apply(clean_title)
     
-    df_movies_new = pd.read_csv('../data/movies_metadata.csv')
+    df_movies_new = pd.read_csv('../data/subsets/movies_metadata.csv')
     df_movies_new = df_movies_new[['id', 'title']]
     
     df_movie_info = df_movies_old.merge(df_movies_new, left_on='title', right_on='title')
@@ -50,13 +46,14 @@ def join_movie_datasets():
 
     return df_movie_info
     
+
 def join_genres():
     '''
     Function to join movie genres from movies dataset with ratings dataset
     df_movies_watched will be a base table used to create final dataset
     '''
     
-    df_ratings = pd.read_csv('../data/movie_lens/ratings.csv')
+    df_ratings = pd.read_csv('../data/movie_lens/ratings_subset.csv')
     df_movie_info = join_movie_datasets()
     
     genre_cols = ['movie_id', 'id', 'unknown', 'action', 'adventure', 'animation', 'childrens',
@@ -84,7 +81,13 @@ def join_credits():
     
     return df_movies_watched
 
+
 def get_movies_watched():
+    '''
+    Generate and return base table with all user's ratings together with genre and cast and crew
+    information for each movie pertaining to that review
+    '''
     
-    
+    df_movies_watched = join_credits()
+    return df_movies_watched
     
