@@ -17,12 +17,33 @@ def get_user_genres(df_movies_watched):
     Creates table with sum of genres watched by user
     To look at history of the genres of the movies the user has watched
     '''
+    
     df = df_movies_watched.copy()
-    df.drop(columns=['movie_id', 'rating', 'timestamp'], inplace=True)
+    df.drop(columns=['movie_id', 'rating', 'timestamp', 'id', 'cast_count', 'crew_count'], inplace=True)
     
     df_genre_pref = df.groupby('user_id', sort=False).sum().reset_index()
     
     return df_genre_pref
+
+def get_user_credits(df_movies_watched, credit_type='cast'):
+    '''
+    Creates table with sum of cast and crew watched by user
+    To look at history of the cast and crew of the movies the user has watched
+    '''
+    
+    df = df_movies_watched.copy()
+    
+    if credit_type == 'cast':
+        df = df[['user_id', 'cast_count']]
+        df.rename(columns={'cast_count': 'credit_count'}, inplace=True)
+    else:
+        df = df[['user_id', 'crew_count']]
+        df.rename(columns={'crew_count': 'credit_count'}, inplace=True)
+    
+    user_groups = df.groupby('user_id', sort=False)
+    df_cred_pref = pd.concat([user_groups['credit_count'].apply(np.sum)]).reset_index()
+    
+    return df_cred_pref
     
 
 def calc_genre_sim(genre_pref, movie_genre, movie_in_pref=True, normalize=True):
