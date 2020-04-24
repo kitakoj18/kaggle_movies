@@ -1,3 +1,29 @@
 # Movies Recommendation System
 
-Here I am using Kaggle's [Movies Dataset](https://www.kaggle.com/rounakbanik/the-movies-dataset#movies_metadata.csv) to build a model that can be used to predict whether or not a user will watch a movie. 
+## Objective
+
+For this project, instead of using common methods such as collaborative filtering, I want to build a model that will predict whether a user will watch a movie. I discuss the dataset and the features I plan to use below. 
+
+## Dataset
+
+I am using two MovieLens dataset - one found [here](https://www.kaggle.com/rounakbanik/the-movies-dataset#movies_metadata.csv) on Kaggle, which is a newer collection of datasets that contains information such as user ratings, movie genre, cast, and crew data. The other group of data is the MovieLens [100K Dataset](https://grouplens.org/datasets/movielens/100k/), which is an older dataset that also contains movie genre data but has some basic information of the users who rated movies like age and general occupation, which attracted me to use the ratings from this older dataset instead. The newer dataset has almost all the movies rated in the older dataset and as I mentioned, contains movie cast, crew, and other information that the older dataset doesn't have but I would like to utilize in the model. 
+
+This project involves joining multiple tables within and across both of these datasets to create base tables that will be used to generate features and ultimately the final dataset that will be used to train the model. I will talk about these base tables at a later time. 
+
+One challenge that I had in joining the older and newer datasets together was that the movie ID's in the older data has been superceded. There is a spreadsheet in the newer dataset that contains "links" between movie ID's and IMDB ID's that looked promising but unfortunately still don't link the older ID's to the newer ones properly. As a result, the best option available was to link by movie names. I reformatted the titles in the older dataset to match the format in the newer one and after some spot checking with the join, I am confident about joining the datasets together so I can pull the data I want from both effectively. 
+
+## Features
+
+I will talk about features more thoroughly once I've built them out but here's a general overview of what I'm going to accomplish. 
+
+First, as I mentioned in the dataset section, I plan to keep and use the ratings of the older datasets so that I can utilize the basic user information we have as features of the model. The movies that each user rated will be classified as having watched the movie, or a binary 1 to be used as the response variable. I will use movies that each user didn't rate to classify as 0 for not having watched the movie. I am still considering how to approach this last part i.e. will I use all the movies the user didn't watch or will I only select a specified number of movies where those selected movies are least similar to the group of movies the user has watched so far? Maybe there are movies that the user just hasn't watched yet and the assumption would be that these movies still-to-watch would be most similar to what the user has watched so far. This method could potentially avoid mislabeling the predictor variable but I will have to give this more thought. 
+
+One aspect of the features for this model is, in a sense, we have independent information that we want to compare somehow and use how similar or unsimilar these comparisons are to each other. 
+
+The independent information I'm talking about is we have information about user's and their behavior and then we have data on characteristics of the movies like genre, cast, and crew. Simply using this data as is for modeling I'm assuming wouldn't be very useful. Instead, we need to establish connections between a user's preference to the characteristics of the movie we're trying to make a prediction on. 
+
+With that said, features of this model will include simlarity metrics between a user's preference based off of their history and the attributes of the movie in question. For example, I will vectorize a user's genre preference by generating a vector where each genre will be one dimension of the vector, and will contain a normalized aggregate of the genres of all the movies the user has watched in the past. One key thing to remember is that for movies that the user did watch, we don't include this movie's genre categories when aggregating. This vector will then be compared to the genre vector of the prediction movie by using a simlarity metric like cosine similarity. I plan to create similarity metrics for cast and crew. 
+
+Another thing to thing about is there are people out there who will watch a movie based off things like genre, who the cast or production crew is, which studio the movie comes from, regardless if the movie is a crappy one or not. On the flip side, there are also people who don't care and might have more of an evenly distributed movie history. This situation might be something that could be informative for our model. To account for this, I will take the genre/cast/crew user vectors I mentioned above and calculate a purity metric that I will then use as a variable for the model. The more "pure" this metric is, the more skewed a user's preference is to a few genres/casts/crew. One of my assumptions is that people who have a less pure or more evenly distributed preference, the higher the chance they would see a given movie. 
+
+This is kind of implied, but the timeline of a user's movie history is not considered. Therefore, one assumption with the features and the model is that the user watched all movies rated prior to the time we're predicting if the user will watch the movie in question. For each movie that the user did rate (i.e. watched = 1), we assume the user watched all other rated movies exclusive of the one we're making a prediction on prior to this prediction. 
