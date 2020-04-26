@@ -2,7 +2,7 @@
 
 ## Objective
 
-For this project, instead of using common methods such as collaborative filtering, I want to build a model that will predict whether a user will watch a movie. I discuss the dataset and the features I plan to use below. 
+For this project, instead of using common methods such as collaborative filtering, I want to build a model that will predict whether a user will watch a movie and use these predictions to build a recommendation system. I discuss the dataset and the features I plan to use below. 
 
 ## Dataset
 
@@ -10,7 +10,7 @@ I am using two MovieLens dataset - one found [here](https://www.kaggle.com/rouna
 
 This project involves joining multiple tables within and across both of these datasets to create base tables that will be used to generate features and ultimately the final dataset that will be used to train the model. I will talk about these base tables at a later time. 
 
-One challenge that I had in joining the older and newer datasets together was that the movie ID's in the older data has been superceded. There is a spreadsheet in the newer dataset that contains "links" between movie ID's and IMDB ID's that looked promising but unfortunately still don't link the older ID's to the newer ones properly. As a result, the best option available was to link by movie names. I reformatted the titles in the older dataset to match the format in the newer one and after some spot checking with the join, I am confident about joining the datasets together so I can pull the data I want from both effectively. 
+One challenge that I had in joining the older and newer datasets together was that the movie ID's in the older data have been superceded. There is a spreadsheet in the newer dataset that contains "links" between movie ID's and IMDB ID's that looked promising but unfortunately still don't link the older ID's to the newer ones properly. As a result, the best option available was to link by movie names. I reformatted the titles in the older dataset to match the format in the newer one and after some spot checking with the join, I am confident about joining the datasets together on titles so I can pull the data I want from both effectively. 
 
 ## Features
 
