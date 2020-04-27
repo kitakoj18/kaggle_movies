@@ -9,43 +9,9 @@ Created on Fri Apr 17 12:18:02 2020
 import numpy as np
 import pandas as pd
 
-from scipy.spatial.distance import cosine
-    
+from scipy.spatial.distance import cosine 
 
-def get_user_genres(df_movies_watched):
-    '''
-    Creates table with sum of genres watched by user
-    To look at history of the genres of the movies the user has watched
-    '''
-    
-    df = df_movies_watched.copy()
-    df.drop(columns=['movie_id', 'rating', 'timestamp', 'id', 'cast_count', 'crew_count'], inplace=True)
-    
-    df_genre_pref = df.groupby('user_id', sort=False).sum().reset_index()
-    
-    return df_genre_pref
-
-def get_user_credits(df_movies_watched):
-    '''
-    Creates table with sum of cast and crew watched by user
-    To look at history of the cast and crew of the movies the user has watched
-    '''
-    
-    df = df_movies_watched.copy()
-    df = df[['user_id', 'cast_count', 'crew_count']]
-    
-    #if credit_type == 'cast':
-    #    df = df[['user_id', 'cast_count']]
-    #    df.rename(columns={'cast_count': 'credit_count'}, inplace=True)
-    #else:
-    #    df = df[['user_id', 'crew_count']]
-    #    df.rename(columns={'crew_count': 'credit_count'}, inplace=True)
-    
-    user_groups = df.groupby('user_id', sort=False)
-    df_cred_pref = pd.concat([user_groups['cast_count'].apply(np.sum), user_groups['crew_count'].apply(np.sum)]).reset_index()
-    
-    return df_cred_pref
-    
+from joins import *
 
 def calc_sim(user_pref, movie_vec, movie_in_pref=True, normalize=True):
     '''
@@ -132,4 +98,8 @@ def add_genre_sim(df_movies_watched, df_genre_pref, df_movies, df_cred_pref, df_
     data['crew_sims'] = crew_sims
     
     return data
+    
+if __name__ == '__main__':
+    
+    df_movie_info = get_movie_info()
     
