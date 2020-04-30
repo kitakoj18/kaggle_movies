@@ -103,10 +103,11 @@ def get_user_tables(df_movie_info, num_unwatched=5):
     
     # narrow movies rated by users to only movies we have information on
     df_ratings = pd.read_csv('../data/movie_lens/ratings_subset.csv')
-    df_movies_watched = df_ratings.merge(df_movie_info, left_on='movie_id', right_on='movie_id')
+    df_avail_movies = df_movie_info[['movie_id']]
+    df_movies_watched = df_ratings.merge(df_avail_movies, left_on='movie_id', right_on='movie_id')
     
     # get set of unique movie_ids from movies we have information on  
-    movie_set = df_movie_info['movie_id'].unique()
+    movie_set = df_avail_movies['movie_id'].unique()
     
     # generate user preference tables and return
     df_user_genre_pref = get_user_genres(df_movies_watched)

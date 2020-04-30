@@ -13,6 +13,9 @@ from scipy.spatial.distance import cosine
 
 from movie_info import *
 from user_prefs import *
+from rating_preds import *
+
+from sqlalchemy import create_engine
 
 def calc_sim(user_pref, movie_vec, movie_in_pref, normalize=True):
     '''
@@ -22,8 +25,8 @@ def calc_sim(user_pref, movie_vec, movie_in_pref, normalize=True):
     user_pref(np array or sparse array): array of user's (genre/cast/crew) preferences
     movie_vec(np array or sparse array): array of the (genre/cast/crew) of the movie that is being compared
     movie_in_pref(boolean): if movie that is being compared is included in user's (genre/cast/crew) preferences
-                            e.g. user has watched the movie - need to exclude and subtract
-                            movie_genre from genre_pref
+                            e.g. user originally has watched the movie - need to exclude and subtract
+                            its movie_genre from genre_pref
     normalize(boolean): min-max normalize user_pref array if True
     '''
     
@@ -35,8 +38,10 @@ def calc_sim(user_pref, movie_vec, movie_in_pref, normalize=True):
     if normalize:
         # try just using scikitlearn minmax scaler
         user_pref = np.true_divide(user_pref - user_pref.min(), user_pref.max() - user_pref.min())
+        
+    cosine_sim = 1 - cosine(user_pref, movie_vec)
     
-    return cosine(user_pref, movie_vec)
+    return cosine_sim
 
 
 def get_sim(user_id, movie_id, type_cols, df_user_pref, df_movie_info, movie_in_pref):
@@ -58,7 +63,7 @@ def get_sim(user_id, movie_id, type_cols, df_user_pref, df_movie_info, movie_in_
     return similarity
 
 
-def add_sim(df_user_watched, df_genre_pref, df_cred_pref, df_movie_info):
+def create_dataset(df_user_watched, df_genre_pref, df_cred_pref, df_movie_info):
     '''
     Adds to df_movies_watched the similarity metric of user's genre preferences 
     to genre of movie making prediction on 
@@ -77,38 +82,49 @@ def add_sim(df_user_watched, df_genre_pref, df_cred_pref, df_movie_info):
     crew_col = ['crew_count']
     crew_sims = []
     
-    for idx, row in data.iterrows():
-        user_id = row['user_id']
-        movie_id = row['movie_id']
-        watched_movie = row['watched_movie']
-        
-        # if user watched movie, need to remove movie vector from user's vector done in calc_sim
-        if watched_movie == 1:
-            movie_in_pref = True
-        else:
-            movie_in_pref = False
+    rating_preds = []
+    
+    # open SQL connection before calling get_user_movie_sims on each row
+    engine = create_engine('mysql://root:pw@localhost/recommender')
+    with engine.connect() as connection: 
+    
+        for idx, row in data.iterrows():
+            user_id = row['user_id']
+            movie_id = row['movie_id']
+            watched_movie = row['watched_movie']
             
-        # get similarity between user's genre preferences to movie genre
-        user_genre_sim = get_sim(user_id, movie_id, genre_cols, df_genre_pref, df_movie_info, movie_in_pref)
-        genre_sims.append(user_genre_sim)
+            # if user watched movie, need to remove movie vector from user's vector done in calc_sim
+            if watched_movie == 1:
+                movie_in_pref = True
+            else:
+                movie_in_pref = False
+                
+            # get similarity between user's genre preferences to movie genre
+            user_genre_sim = get_sim(user_id, movie_id, genre_cols, df_genre_pref, df_movie_info, movie_in_pref)
+            genre_sims.append(user_genre_sim)
+            
+            # get similarity between user's cast preferences to movie's cast
+            user_cast_sim = get_sim(user_id, movie_id, cast_col, df_cred_pref, df_movie_info, movie_in_pref)
+            cast_sims.append(user_cast_sim)
+            
+            # get similarity between user's crew preferences to movie's crew
+            user_crew_sim = get_sim(user_id, movie_id, crew_col, df_cred_pref, df_movie_info, movie_in_pref)
+            crew_sims.append(user_crew_sim)
+            
+            # get predicted user rating for movie
+            rating_pred = get_rating_pred(user_id, movie_id, connection)
+            rating_preds.append(rating_pred)
         
-        # get similarity between user's cast preferences to movie's cast
-        user_cast_sim = get_sim(user_id, movie_id, cast_col, df_cred_pref, df_movie_info, movie_in_pref)
-        cast_sims.append(user_cast_sim)
-        
-        # get similarity between user's crew preferences to movie's crew
-        user_crew_sim = get_sim(user_id, movie_id, crew_col, df_cred_pref, df_movie_info, movie_in_pref)
-        crew_sims.append(user_crew_sim)
-        
-    data['genre_sims'] = genre_sims
-    data['cast_sims'] = cast_sims
-    data['crew_sims'] = crew_sims
+    data['genre_sim'] = genre_sims
+    data['cast_sim'] = cast_sims
+    data['crew_sim'] = crew_sims
+    data['rating_pred'] = rating_preds
     
     return data
-    
+
 if __name__ == '__main__':
     
     df_movie_info = get_movie_info()
     df_user_genre_pref, df_user_cred_pref, df_user_watched = get_user_tables(df_movie_info)
     
-    data = add_sim(df_user_watched, df_user_genre_pref, df_user_cred_pref, df_movie_info)
+    data = create_dataset(df_user_watched, df_user_genre_pref, df_user_cred_pref, df_movie_info)
