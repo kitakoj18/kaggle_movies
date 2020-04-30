@@ -18,9 +18,6 @@ from rating_preds import *
 
 from sqlalchemy import create_engine
 
-
-
-
 def create_dataset(df_user_watched, df_genre_pref, df_cred_pref, df_movie_info):
     '''
     Adds to df_movies_watched the similarity metric of user's genre preferences 
