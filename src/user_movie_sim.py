@@ -8,6 +8,8 @@ Created on Thu Apr 30 15:54:21 2020
 import numpy as np
 import pandas as pd
 
+from scipy.spatial.distance import cosine 
+
 def calc_sim(user_pref, movie_vec, movie_in_pref, normalize=True):
     '''
     Calculates similarity metric between user's preferences and those same characteristics 
