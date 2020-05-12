@@ -9,12 +9,12 @@ Created on Fri Apr 17 12:18:02 2020
 import numpy as np
 import pandas as pd
 
-from scipy.spatial.distance import cosine 
-
 from movie_info import *
 from user_movie_sim import *
 from user_prefs import *
 from rating_preds import *
+
+from movie_sims import *
 
 from sqlalchemy import create_engine
 
@@ -81,5 +81,8 @@ if __name__ == '__main__':
     
     df_movie_info = get_movie_info()
     df_user_genre_pref, df_user_cred_pref, df_user_watched = get_user_tables(df_movie_info)
+    
+    generate_movie_sims(df_movie_info)
+    create_ratings_table(df_movie_info)
     
     data = create_dataset(df_user_watched, df_user_genre_pref, df_user_cred_pref, df_movie_info)
