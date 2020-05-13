@@ -15,6 +15,7 @@ from user_prefs import *
 from rating_preds import *
 
 from movie_sims import *
+from user_pref_dist import *
 
 from sqlalchemy import create_engine
 
@@ -38,6 +39,9 @@ def create_dataset(df_user_watched, df_genre_pref, df_cred_pref, df_movie_info):
     crew_sims = []
     
     rating_preds = []
+    genre_ents = []
+    cast_ents = []
+    crew_ents = []
     
     # open SQL connection before calling get_user_movie_sims on each row
     engine = create_engine('mysql://root:pw@localhost/recommender')
@@ -69,11 +73,24 @@ def create_dataset(df_user_watched, df_genre_pref, df_cred_pref, df_movie_info):
             # get predicted user rating for movie
             rating_pred = get_rating_pred(user_id, movie_id, connection)
             rating_preds.append(rating_pred)
+            
+            # get user's genre entropy value
+            genre_ent = get_entropy(user_id, 'user_genre_ent', connection)
+            genre_ents.append(genre_ent)
+            
+            cast_ent = get_entropy(user_id, 'user_cast_ent', connection)
+            cast_ents.append(cast_ent)
+            
+            crew_ent = get_entropy(user_id, 'user_crew_ent', connection)
+            crew_ents.append(crew_ent)
         
     data['genre_sim'] = genre_sims
     data['cast_sim'] = cast_sims
     data['crew_sim'] = crew_sims
     data['rating_pred'] = rating_preds
+    data['genre_ent'] = genre_ents
+    data['cast_ent'] = cast_ents
+    data['crew_ent'] = crew_ents
     
     return data
 
@@ -83,6 +100,10 @@ if __name__ == '__main__':
     df_user_genre_pref, df_user_cred_pref, df_user_watched = get_user_tables(df_movie_info)
     
     generate_movie_sims(df_movie_info)
-    create_ratings_table(df_movie_info)
+    create_movie_sims(df_movie_info)
+    
+    create_user_entropy(df_user_genre_pref, 'user_genre_ent')
+    create_user_entropy(df_user_cred_pref, 'user_cast_ent')
+    create_user_entropy(df_user_cred_pref, 'user_crew_ent')
     
     data = create_dataset(df_user_watched, df_user_genre_pref, df_user_cred_pref, df_movie_info)

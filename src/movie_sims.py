@@ -13,13 +13,11 @@ from scipy.spatial.distance import cosine
 
 from sqlalchemy import create_engine
 
-def generate_movie_sims(df_movie_info, to_sql=True):
+def create_movie_sims(df_movie_info):
     '''
-    Compares every movie to each other based off of genres and creates new table
+    Compares every movie to each other based off of genres and creates and exports new SQL table
     with both movie id's and the cosine similarity between the two - does permutation
     instead of combination due to nature of calculating predicted user rating
-    
-    Default to export table to MySQL table
     '''
     
     cols = ['movie_id', 'unknown', 'action', 'adventure', 'animation', 'childrens',
@@ -49,11 +47,8 @@ def generate_movie_sims(df_movie_info, to_sql=True):
             movie_sims.append(movies_sim_arr)
             
     df_genre_sim = pd.DataFrame(movie_sims[1:], columns=movie_sims[0])
-    
-    if to_sql:
-        make_sql_table(df_genre_sim, 'movie_sims')
-    
-    return df_genre_sim
+
+    make_sql_table(df_genre_sim, 'movie_sims')
 
 
 def make_sql_table(df, table_name):
