@@ -92,6 +92,11 @@ def create_dataset(df_user_watched, df_genre_pref, df_cred_pref, df_movie_info):
     data['cast_ent'] = cast_ents
     data['crew_ent'] = crew_ents
     
+    df_users = pd.read_csv('../data/movie_lens/users.csv')
+    df_users = df_users[['user_id', 'age', 'gender', 'occupation']]
+    
+    data = data.merge(df_users, left_on='user_id', right_on='user_id')
+    
     return data
 
 if __name__ == '__main__':
