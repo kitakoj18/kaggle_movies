@@ -42,7 +42,7 @@ def create_user_entropy(df_user_pref, table_name):
     entropies = []
     for idx, row in df_user_pref.iterrows():
 
-        user_vec = row[cols]
+        user_vec = row[cols].to_numpy()
         ent = entropy(user_vec)
         entropies.append(ent)
         
@@ -64,7 +64,7 @@ def get_entropy(user_id, table_name, conn):
             '''.format(table_name, user_id)
     
     result = conn.execute(query)
-    entropy = result[0].entropy
+    entropy = result.fetchone()['entropy']
     
     return entropy
     
