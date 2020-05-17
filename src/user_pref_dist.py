@@ -18,9 +18,8 @@ genre_cols = ['unknown', 'action', 'adventure', 'animation', 'childrens',
                   'horror', 'musical', 'mystery', 'romance', 'sci-fi', 'thriller',
                   'war', 'western']
 
-cast_col = ['cast_count']
-
-crew_col = ['crew_count']
+cast_col = 'cast_count'
+crew_col = 'crew_count'
 
 
 def create_user_entropy(df_user_pref, table_name):
@@ -36,21 +35,31 @@ def create_user_entropy(df_user_pref, table_name):
         cols = genre_cols
     elif table_name == 'user_cast_ent':
         cols = cast_col
-    elif table_name == 'user_crew_ent':
+    else:
         cols = crew_col
     
     entropies = []
     for idx, row in df_user_pref.iterrows():
 
-        user_vec = row[cols].to_numpy()
+        if table_name == 'user_genre_ent':
+            user_vec = row[cols].to_numpy()
+        else:
+            user_vec = row[cols].toarray().flatten()
+
         ent = entropy(user_vec)
         entropies.append(ent)
         
     df_user_pref['entropy'] = entropies
+    
+    # for cast table, make sure crew_count col is dropped too and vice versa
+    if table_name == 'user_cast_ent':
+        cols = [cols, 'crew_count']
+    if table_name == 'user_crew_ent':
+        cols = [cols, 'cast_count']
+        
     df_user_pref.drop(columns=cols, inplace=True)
     
-    make_sql_table(df_user_pref, table_name)
-    
+    make_sql_table(df_user_pref, table_name) 
     
 def get_entropy(user_id, table_name, conn):
     '''
