@@ -97,6 +97,9 @@ def create_dataset(df_user_watched, df_genre_pref, df_cred_pref, df_movie_info):
     
     data = data.merge(df_users, left_on='user_id', right_on='user_id')
     
+    # fillna in case user_pref vector is zero and sim calculation is NaN
+    data.fillna(0, inplace=True)
+    
     return data
 
 if __name__ == '__main__':

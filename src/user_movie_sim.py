@@ -28,7 +28,7 @@ def calc_sim(user_pref, movie_vec, movie_in_pref, normalize=True):
     if movie_in_pref:
         user_pref = user_pref - movie_vec
         
-    if normalize:
+    if normalize and (user_pref.max() != user_pref.min()):
         # try just using scikitlearn minmax scaler
         user_pref = np.true_divide(user_pref - user_pref.min(), user_pref.max() - user_pref.min())
         
@@ -49,10 +49,10 @@ def get_sim(user_id, movie_id, type_cols, df_user_pref, df_movie_info, movie_in_
     if type(type_cols)==str:
         
         user_pref = df_user_pref[df_user_pref['user_id'] == user_id].reset_index(drop=True)
-        user_pref_vec = user_pref[type_cols][0]
+        user_pref_vec = user_pref[type_cols][0].toarray()
     
         movie_info = df_movie_info[df_movie_info['movie_id'] == movie_id].reset_index(drop=True)
-        movie_info_vec = movie_info[type_cols][0]
+        movie_info_vec = movie_info[type_cols][0].toarray()
 
     #else type_cols is list of genre_cols
     else: 
