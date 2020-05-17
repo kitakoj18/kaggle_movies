@@ -52,5 +52,20 @@ def calc_rating_pred(user_rating_movie_sims):
         # weighted sum
         rating_pred = np.true_divide((rating_arr*genre_sims_arr).sum(), genre_sims_arr.sum())
         return rating_pred
+    
+    
+def create_ratings_table(df_movie_info):
+    '''
+    Exports user ratings to MySQL table to use for user rating predictions
+    '''
+    
+    # narrow movies rated by users to only movies we have information on
+    df_ratings = pd.read_csv('../data/movie_lens/ratings_subset.csv')
+    df_avail_movies = df_movie_info[['movie_id']]
+    df_ratings = df_ratings.merge(df_avail_movies, left_on='movie_id', right_on='movie_id')
+    
+    df_ratings.drop(columns=['timestamp'], inplace=True)
+    
+    make_sql_table(df_ratings, 'ratings')
         
     
