@@ -9,6 +9,8 @@ Created on Fri Apr 17 12:18:02 2020
 import numpy as np
 import pandas as pd
 
+import os
+
 from movie_info import *
 from user_movie_sim import *
 from user_prefs import *
@@ -44,7 +46,9 @@ def create_dataset(df_user_watched, df_genre_pref, df_cred_pref, df_movie_info):
     crew_ents = []
     
     # open SQL connection before calling get_user_movie_sims on each row
-    engine = create_engine('mysql://root:pw@localhost/recommender')
+    pw = os.environ.get("MYSQLPW")
+    path = 'mysql://root:{}@localhost/recommender'.format(pw)
+    engine = create_engine(path)
     with engine.connect() as connection: 
     
         for idx, row in data.iterrows():

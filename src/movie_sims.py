@@ -9,6 +9,8 @@ Created on Thu Apr 30 11:44:47 2020
 import numpy as np
 import pandas as pd
 
+import os
+
 from scipy.spatial.distance import cosine
 
 from sqlalchemy import create_engine
@@ -56,7 +58,9 @@ def make_sql_table(df, table_name):
     Helper function to push DataFrame to MySQL table
     '''
     
-    engine = create_engine('mysql://root:pw@localhost/recommender')
+    pw = os.environ.get("MYSQLPW")
+    path = 'mysql://root:{}@localhost/recommender'.format(pw)
+    engine = create_engine(path)
     
     with engine.connect() as connection: 
         df.to_sql(con=connection, name=table_name, if_exists='replace', index=False)
