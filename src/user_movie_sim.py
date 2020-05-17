@@ -43,13 +43,24 @@ def get_sim(user_id, movie_id, type_cols, df_user_pref, df_movie_info, movie_in_
     Selects user's genre, cast, or crew vector (based off type_cols) from df_user_pref
     and the movie's genre, cast, or crew vector from df_movie_info and calculates
     the simlarity between the two vectors
-    '''    
+    ''' 
+    
+    #if type_cols is either 'cast_count' or 'crew_count'
+    if type(type_cols)==str:
+        
+        user_pref = df_user_pref[df_user_pref['user_id'] == user_id].reset_index(drop=True)
+        user_pref_vec = user_pref[type_cols][0]
+    
+        movie_info = df_movie_info[df_movie_info['movie_id'] == movie_id].reset_index(drop=True)
+        movie_info_vec = movie_info[type_cols][0]
 
-    user_pref = df_user_pref[df_user_pref['user_id'] == user_id]
-    user_pref_vec = user_pref[type_cols].to_numpy()
-
-    movie_info = df_movie_info[df_movie_info['movie_id'] == movie_id]
-    movie_info_vec = movie_info[type_cols].to_numpy()     
+    #else type_cols is list of genre_cols
+    else: 
+        user_pref = df_user_pref[df_user_pref['user_id'] == user_id]
+        user_pref_vec = user_pref[type_cols].to_numpy()
+    
+        movie_info = df_movie_info[df_movie_info['movie_id'] == movie_id]
+        movie_info_vec = movie_info[type_cols].to_numpy()     
     
     similarity = calc_sim(user_pref_vec, movie_info_vec, movie_in_pref)
     

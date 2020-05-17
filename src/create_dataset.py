@@ -32,10 +32,10 @@ def create_dataset(df_user_watched, df_genre_pref, df_cred_pref, df_movie_info):
                   'war', 'western']
     genre_sims = []
     
-    cast_col = ['cast_count']
+    cast_col = 'cast_count'
     cast_sims = []
     
-    crew_col = ['crew_count']
+    crew_col = 'crew_count'
     crew_sims = []
     
     rating_preds = []
@@ -50,7 +50,7 @@ def create_dataset(df_user_watched, df_genre_pref, df_cred_pref, df_movie_info):
         for idx, row in data.iterrows():
             user_id = row['user_id']
             movie_id = row['movie_id']
-            watched_movie = row['watched_movie']
+            watched_movie = row['watched']
             
             # if user watched movie, need to remove movie vector from user's vector done in calc_sim
             if watched_movie == 1:
@@ -104,8 +104,9 @@ if __name__ == '__main__':
     df_movie_info = get_movie_info()
     df_user_genre_pref, df_user_cred_pref, df_user_watched = get_user_tables(df_movie_info)
     
-    generate_movie_sims(df_movie_info)
+    #generate_movie_sims(df_movie_info)
     create_movie_sims(df_movie_info)
+    create_ratings_table(df_movie_info)
     
     create_user_entropy(df_user_genre_pref, 'user_genre_ent')
     create_user_entropy(df_user_cred_pref, 'user_cast_ent')
